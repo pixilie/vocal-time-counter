@@ -1,5 +1,5 @@
 {
-  inputs = { nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11"; };
+  inputs = { nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11"; };
 
   outputs = { self, nixpkgs }:
     let
@@ -20,7 +20,7 @@
       devShells = forAllPkgs (pkgs:
         with pkgs.lib; {
           default = pkgs.mkShell rec {
-            nativeBuildInputs = with pkgs; [ bun nodejs_23 ];
+            nativeBuildInputs = with pkgs; [ bun nodejs_24 ];
             buildInputs = with pkgs; [ prisma prisma-engines ];
             shellHook = with pkgs; ''
               export PRISMA_SCHEMA_ENGINE_BINARY="${prisma-engines}/bin/schema-engine"

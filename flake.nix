@@ -1,7 +1,11 @@
 {
-  inputs = { nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11"; };
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+  };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, rust-overlay }:
     let
       inherit (nixpkgs.lib) genAttrs;
 
@@ -12,25 +16,26 @@
       pkgs = forAllSystems (system:
         (import nixpkgs {
           inherit system;
-          overlays = [ ];
+          overlays = [ (import rust-overlay) ];
         }));
     in {
       formatter = forAllPkgs (pkgs: pkgs.nixpkgs-fmt);
 
       devShells = forAllPkgs (pkgs:
-        with pkgs.lib; {
+        with pkgs.lib;
+        let
+          rust-toolchain = pkgs.rust-bin.stable.latest.default.override {
+            extensions = [ "rust-analyzer" "rust-src" ];
+          };
+        in {
           default = pkgs.mkShell rec {
-            nativeBuildInputs = with pkgs; [ bun nodejs_24 ];
-            buildInputs = with pkgs; [ prisma prisma-engines ];
-            shellHook = with pkgs; ''
-              export PRISMA_SCHEMA_ENGINE_BINARY="${prisma-engines}/bin/schema-engine"
-              export PRISMA_QUERY_ENGINE_BINARY="${prisma-engines}/bin/query-engine"
-              export PRISMA_QUERY_ENGINE_LIBRARY="${prisma-engines}/lib/libquery_engine.node"
-              export PRISMA_FMT_BINARY="${prisma-engines}/bin/prisma-fmt"
-            '';
+            nativeBuildInputs = with pkgs; [ pkg-config rust-toolchain ];
+
+            buildInputs = with pkgs; [ openssl ];
+
+            RUST_SRC_PATH = "${rust-toolchain}/lib/rustlib/src/rust/library";
             LD_LIBRARY_PATH = makeLibraryPath buildInputs;
           };
         });
-
     };
 }

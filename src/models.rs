@@ -39,7 +39,10 @@ pub(crate) struct Member {
 	pub(crate) time_defeaned: f64,
 	pub(crate) time_streaming: f64,
 	pub(crate) time_video: f64,
+
 	pub(crate) last_active: DateTime<Utc>,
+	pub(crate) last_mute: DateTime<Utc>,
+	pub(crate) last_deafen: DateTime<Utc>,
 	pub(crate) last_stream: DateTime<Utc>,
 	pub(crate) last_video: DateTime<Utc>,
 }

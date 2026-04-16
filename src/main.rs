@@ -1,9 +1,6 @@
 use handler::Handler;
 use models::{Config, DataFile};
 
-use serenity::all::VoiceState;
-use serenity::async_trait;
-use serenity::model::gateway::Ready;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
 

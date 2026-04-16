@@ -82,7 +82,22 @@ async fn main() {
 		})
 		.setup(move |ctx, _ready, framework| {
 			Box::pin(async move {
-				//poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+				let empty_commands: &[poise::Command<
+					crate::models::DataFile,
+					crate::models::Error,
+				>] = &[];
+
+				// Clear commands
+				poise::builtins::register_globally(ctx, empty_commands).await?;
+				poise::builtins::register_in_guild(
+					ctx,
+					empty_commands,
+					poise::serenity_prelude::GuildId::new(guild_id),
+				)
+				.await?;
+
+				// Register commands
+				// poise::builtins::register_globally(ctx, &framework.options().commands).await?;
 				poise::builtins::register_in_guild(
 					ctx,
 					&framework.options().commands,

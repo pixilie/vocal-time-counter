@@ -6,3 +6,6 @@ pub use ping::ping;
 
 pub mod time;
 pub use time::time;
+
+pub mod server;
+pub use server::server;

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+    discord-bot:
+        build: .
+        container_name: mon_bot_discord
+        restart: unless-stopped
+        environment:
+            - TOKEN=
+            - CLIENT_ID=
+            - GUILD_ID=
+            - RUST_LOG=info
+        volumes:
+            - ./data:/app/data

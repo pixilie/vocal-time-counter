@@ -14,7 +14,7 @@ mod commands;
 mod handler;
 mod models;
 
-const DB_FILE: &str = "data.json";
+const DB_FILE: &str = "./data/data.json";
 
 fn load_database(file_path: &str) -> DataFile {
 	let path = Path::new(file_path);

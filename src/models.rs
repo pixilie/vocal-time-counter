@@ -5,14 +5,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone)]
 pub(crate) struct Config {
 	pub(crate) token: String,
-	pub(crate) guild_id: String,
+	pub(crate) guild_id: u64,
 }
 
 impl Config {
 	pub(crate) fn load() -> Self {
 		Self {
 			token: var("TOKEN").expect("Token expected in the environnement"),
-			guild_id: var("GUILD_ID").expect("GuildID expected in the environnement"),
+			guild_id: var("GUILD_ID")
+				.expect("GuildID expected in the environnement")
+				.parse::<u64>()
+				.expect("Error while parsing GuildID"),
 		}
 	}
 }

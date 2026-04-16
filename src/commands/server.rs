@@ -17,6 +17,7 @@ fn format_duration(seconds: f64) -> String {
 	}
 }
 
+/// Display server statistics
 #[poise::command(slash_command, ephemeral)]
 pub async fn server(
 	ctx: Context<'_>,

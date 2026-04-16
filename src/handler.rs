@@ -196,6 +196,8 @@ impl Handler {
 			user.time_video += (now - user.last_video).as_seconds_f64();
 		}
 
+		user.last_active = now;
+
 		let channel_exists = db.channels.iter().any(|c| c.id == channel_id.get());
 
 		if !channel_exists {

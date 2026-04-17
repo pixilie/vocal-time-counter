@@ -49,7 +49,7 @@ pub async fn server(
 	let limit = limit.unwrap_or(10).clamp(1, 20);
 	let top_channels = channels.into_iter().take(limit);
 
-	let mut ranking_desc = String::from("**🏆 Voice channels ranking**\n\n");
+	let mut ranking_desc = String::from("**🏆 Voice channels ranking**\n");
 	let mut has_channels = false;
 
 	for (index, channel) in top_channels.enumerate() {
@@ -72,6 +72,8 @@ pub async fn server(
 	if !has_channels {
 		ranking_desc.push_str("No voice channel has been used.\n");
 	}
+
+	ranking_desc.push_str("\n\u{200B}");
 
 	let embed = CreateEmbed::new()
 		.title("🌍 Server's statistics")

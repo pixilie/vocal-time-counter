@@ -21,6 +21,13 @@
     in {
       formatter = forAllPkgs (pkgs: pkgs.nixpkgs-fmt);
 
+      packages = genAttrs [ "x86_64-linux" "aarch64-linux" ] (system: rec {
+        vocal-time-counter = pkgs.${system}.callPackage ./nix/package.nix { };
+        default = vocal-time-counter;
+      });
+
+      nixosModules.default = import ./nix/module.nix self;
+
       devShells = forAllPkgs (pkgs:
         with pkgs.lib;
         let

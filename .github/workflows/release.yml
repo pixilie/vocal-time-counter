@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+# Branch that receives the updated nix/release.json after each release.
+env:
+  RELEASE_BRANCH: vct-rs
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - system: x86_64-linux
+            target: x86_64-unknown-linux-musl
+            runner: ubuntu-24.04
+          - system: aarch64-linux
+            target: aarch64-unknown-linux-musl
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install musl toolchain
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build static binary
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --locked --target ${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/vocal-time-counter vocal-time-counter-${{ matrix.system }}
+          file vocal-time-counter-${{ matrix.system }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vocal-time-counter-${{ matrix.system }}
+          path: vocal-time-counter-${{ matrix.system }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes --verify-tag
+
+      - name: Update nix/release.json
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          sri() { echo "sha256-$(openssl dgst -sha256 -binary "$1" | base64 -w0)"; }
+
+          jq -n \
+            --arg version "$version" \
+            --arg x86_url "$base/vocal-time-counter-x86_64-linux" \
+            --arg x86_hash "$(sri dist/vocal-time-counter-x86_64-linux)" \
+            --arg arm_url "$base/vocal-time-counter-aarch64-linux" \
+            --arg arm_hash "$(sri dist/vocal-time-counter-aarch64-linux)" \
+            '{
+              version: $version,
+              assets: {
+                "x86_64-linux":  { url: $x86_url, hash: $x86_hash },
+                "aarch64-linux": { url: $arm_url, hash: $arm_hash }
+              }
+            }' > nix/release.json
+          cat nix/release.json
+
+      - name: Commit nix/release.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add nix/release.json
+          git commit -m "chore(nix): release ${GITHUB_REF_NAME}"
+          git push origin "HEAD:${RELEASE_BRANCH}"

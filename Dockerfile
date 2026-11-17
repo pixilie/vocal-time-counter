@@ -1,16 +1,17 @@
-FROM rust:1.77-bookworm AS builder
+FROM rust:1-bookworm AS builder
 
 WORKDIR /usr/src/app
 
 COPY . .
 
-RUN cargo build --release
+RUN cargo build --release --locked
 
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
+
+# The bot writes its database to ./data/data.json
+RUN mkdir data
 
 COPY --from=builder /usr/src/app/target/release/vocal-time-counter ./bot
 

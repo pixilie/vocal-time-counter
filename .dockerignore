@@ -1,0 +1,6 @@
+target/
+data/
+data.json
+.env
+.direnv/
+.git/

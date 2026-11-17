@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -18,13 +18,17 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         }));
-    in {
+    in
+    {
       formatter = forAllPkgs (pkgs: pkgs.nixpkgs-fmt);
 
-      packages = genAttrs [ "x86_64-linux" "aarch64-linux" ] (system: rec {
-        vocal-time-counter = pkgs.${system}.callPackage ./nix/package.nix { };
-        default = vocal-time-counter;
-      });
+      # Only systems that have a prebuilt binary in the latest release
+      packages = genAttrs
+        (builtins.attrNames (nixpkgs.lib.importJSON ./nix/release.json).assets)
+        (system: rec {
+          vocal-time-counter = pkgs.${system}.callPackage ./nix/package.nix { };
+          default = vocal-time-counter;
+        });
 
       nixosModules.default = import ./nix/module.nix self;
 
@@ -34,7 +38,8 @@
           rust-toolchain = pkgs.rust-bin.stable.latest.default.override {
             extensions = [ "rust-analyzer" "rust-src" ];
           };
-        in {
+        in
+        {
           default = pkgs.mkShell rec {
             nativeBuildInputs = with pkgs; [ pkg-config rust-toolchain ];
 

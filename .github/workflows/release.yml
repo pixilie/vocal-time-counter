@@ -4,9 +4,8 @@ on:
   push:
     tags: ["v*"]
 
-# Branch that receives the updated nix/release.json after each release.
 env:
-  RELEASE_BRANCH: vct-rs
+  RELEASE_BRANCH: release
 
 permissions:
   contents: write
@@ -55,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 0
 
       - uses: actions/download-artifact@v4
         with:
@@ -88,10 +87,15 @@ jobs:
             }' > nix/release.json
           cat nix/release.json
 
-      - name: Commit nix/release.json
+      - name: Push to release branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add nix/release.json
-          git commit -m "chore(nix): release ${GITHUB_REF_NAME}"
-          git push origin "HEAD:${RELEASE_BRANCH}"
+
+          parents=(-p "$GITHUB_SHA")
+          if git rev-parse -q --verify "origin/${RELEASE_BRANCH}" >/dev/null; then
+            parents+=(-p "origin/${RELEASE_BRANCH}")
+          fi
+          commit=$(git commit-tree "$(git write-tree)" "${parents[@]}" -m "chore(nix): release ${GITHUB_REF_NAME}")
+          git push origin "${commit}:refs/heads/${RELEASE_BRANCH}"

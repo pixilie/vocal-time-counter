@@ -1,4 +1,13 @@
 {
-  "version": "0.0.0",
-  "assets": {}
+  "version": "0.1.0",
+  "assets": {
+    "x86_64-linux": {
+      "url": "https://github.com/pixilie/vocal-time-counter/releases/download/v0.1.0/vocal-time-counter-x86_64-linux",
+      "hash": "sha256-27ZVbD1+do+jkeQMvhdLISBApbPAPUUIPz+HFcpZuZY="
+    },
+    "aarch64-linux": {
+      "url": "https://github.com/pixilie/vocal-time-counter/releases/download/v0.1.0/vocal-time-counter-aarch64-linux",
+      "hash": "sha256-17rBOZUiKKnAZpv4Q06002Yo6R/VYT8GiUQadPv3bjA="
+    }
+  }
 }
